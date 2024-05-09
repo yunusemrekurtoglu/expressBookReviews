@@ -1,8 +1,22 @@
 const express = require('express');
+const axios = require('axios').default;
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+
+const connectToURL = (url)=>{
+  const req = axios.get(url);
+  console.log(req);
+  req.then(resp => {
+      console.log("Fulfilled")
+      console.log(resp.data);
+  })
+  .catch(err => {
+      console.log("Rejected for url "+url)
+      console.log(err.toString())
+  }); 
+}
 
 // Register users
 public_users.post("/register", (req,res) => {
@@ -22,51 +36,83 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  return res.send(JSON.stringify({books},null,4));
+  const methCall = new Promise((resolve,reject)=>{
+    try {
+      const response = JSON.stringify({books},null,4); 
+      resolve(response);
+    } catch(err) {
+      reject(err)
+      }
+  });
+  methCall.then(
+    (response) => res.send(response),
+    (err) => console.log("Error accessing database") 
+  );  
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   const isbn = req.params.isbn;
-  return res.send(books[isbn]);
+  const methCall = new Promise((resolve,reject)=>{
+    try {
+      const response = books[isbn]; 
+      resolve(response);
+    } catch(err) {
+      reject(err)
+      }
+  });
+  methCall.then(
+    (response) => res.send(response),
+    (err) => console.log("Error accessing that book or the database") 
+  );  
  });
 
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   const author = req.params.author;  
   let filtered_books = [];
-  let isbns = Object.keys(books);
-  
-  isbns.forEach(isbn => {
-    if (books[isbn].author === author) {
-      filtered_books.push(books[isbn]);
-    }      
+  const methCall = new Promise((resolve,reject)=>{
+    try {
+      let isbns = Object.keys(books);
+      isbns.forEach(isbn => {
+        if (books[isbn].author === author) {
+          filtered_books.push(books[isbn]);
+        }      
+      });
+      const response = JSON.stringify({filtered_books},null,4);
+      resolve(response);
+    } catch(err) {
+      reject(err)
+      }
   });
-  if (filtered_books.length > 0) {
-    return res.send(JSON.stringify({filtered_books},null,4));
-  }
-  else {
-    return res.send("There are no books from author " + (' ')+ (req.params.author) + " in the database!");
-  }
+  methCall.then(
+    (response) => res.send(response),
+    (err) => console.log("Error accessing that author or the database") 
+  );  
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   const title = req.params.title;  
   let filtered_books = [];
-  let isbns = Object.keys(books);
-  
-  isbns.forEach(isbn => {
-    if (books[isbn].title === title) {
-      filtered_books.push(books[isbn]);
-    }      
+  const methCall = new Promise((resolve,reject)=>{
+    try {
+      let isbns = Object.keys(books);
+      isbns.forEach(isbn => {
+        if (books[isbn].title === title) {
+          filtered_books.push(books[isbn]);
+        }      
+      });
+      const response = JSON.stringify({filtered_books},null,4);
+      resolve(response);
+    } catch(err) {
+      reject(err)
+      }
   });
-  if (filtered_books.length > 0) {
-    return res.send(JSON.stringify({filtered_books},null,4));
-  }
-  else {
-    return res.send("There are no books titled " + (' ')+ (req.params.title) + " in the database!");
-  }
+  methCall.then(
+    (response) => res.send(response),
+    (err) => console.log("Error accessing that author or the database") 
+  );  
 });
 
 //  Get book review
